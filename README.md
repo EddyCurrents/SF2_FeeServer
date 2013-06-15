@@ -11,9 +11,9 @@ SmartFusion2 SOM Starter Kit Guide
 
 Linux Cortex-M User's Guide
 
-######FPGA programming file with required U-Boot image:###### .stp file for SF2-STARTER-KIT-ES-2 (SOM Rev 2A)
+**FPGA programming file with required U-Boot image:** .stp file for SF2-STARTER-KIT-ES-2 (SOM Rev 2A)
 
-######BSP and development environment:###### SmartFusion2 SOM Linux Board Support Package (BSP) and software development environment
+**BSP and development environment:** SmartFusion2 SOM Linux Board Support Package (BSP) and software development environment
 
-######Toolchain for compiling:###### GNU toolchain for uClinux Cortex-M3/M4
+**Toolchain for compiling:** GNU toolchain for uClinux Cortex-M3/M4
 
