@@ -16,3 +16,4 @@ Linux Cortex-M User's Guide
 ######BSP and development environment:###### SmartFusion2 SOM Linux Board Support Package (BSP) and software development environment
 
 ######Toolchain for compiling:###### GNU toolchain for uClinux Cortex-M3/M4
+
