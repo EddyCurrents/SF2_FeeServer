@@ -1,0 +1,27 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>3.6. GDB Server</title><link rel="stylesheet" href="cs.css" type="text/css"><meta name="generator" content="DocBook XSL Stylesheets V1.74.0"><link rel="home" href="index.html" title="Sourcery G++ Lite"><link rel="up" href="chap-target.html" title="Chapter 3. Sourcery G++ Lite for ARM uClinux"><link rel="prev" href="ch03s05.html" title="3.5. Building uClinux Applications"><link rel="next" href="chap-building.html" title="Chapter 4. Using Sourcery G++ from the Command Line"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">3.6. GDB Server</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch03s05.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Sourcery G++ Lite for ARM uClinux</th><td width="20%" align="right"> <a accesskey="n" href="chap-building.html">Next</a></td></tr></table><hr></div><div class="section" lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="uclinux-gdbserver"></a>3.6. GDB Server</h2></div></div></div><p>
+  Sourcery G++ Lite contains a <code class="command">gdbserver</code> for running on the
+  target.  The server executable is located in the
+  <code class="filename"><em class="replaceable"><code>sysroot/</code></em>usr/bin</code>
+  directory of your installation, where <em class="replaceable"><code>sysroot</code></em> is
+  the pathname to the sysroot, as documented in 
+  <a class="xref" href="sec-multilibs.html" title="3.2. Library Configurations">Section 3.2, &#8220;Library Configurations&#8221;</a>.
+  You need to copy the appropriate <code class="command">gdbserver</code> executable
+  to your target system and then invoke it as
+
+  </p><pre class="screen"># gdbserver :<em class="replaceable"><code>port</code></em> <em class="replaceable"><code>program</code></em></pre><p>
+
+  <em class="replaceable"><code>port</code></em> can be any available TCP port; 5000
+  is a common choice.  <code class="command">gdbserver</code> waits for a
+  connection from <code class="command">gdb</code> and then commences serving
+  requests for it.  To connect to <code class="command">gdbserver</code> from
+  your host system, start <code class="command">gdb</code>, but specify the
+  special <code class="literal">.gdb</code> version of your program.
+
+  </p><pre class="screen">&gt; arm-uclinuxeabi-gdb <em class="replaceable"><code>program</code></em>.gdb</pre><p>
+
+  Then connect to the target system:
+
+  </p><pre class="screen">(gdb) target remote <em class="replaceable"><code>host</code></em>:<em class="replaceable"><code>port</code></em></pre><p>
+
+  At this point you are able to debug as usual.
+  </p></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch03s05.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="chap-target.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="chap-building.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3.5. Building uClinux Applications </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 4. Using Sourcery G++ from the Command Line</td></tr></table></div></body></html>
