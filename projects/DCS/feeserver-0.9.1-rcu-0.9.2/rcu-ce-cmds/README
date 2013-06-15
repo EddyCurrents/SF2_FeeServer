@@ -1,0 +1,80 @@
+folder: rcu_ce_cmds
+
+Sample commands for the FeeServer control Engine
+================================================
+
+The FeeServer provides several groups of commands. Please refer to the
+command definition in feeserver/src_ce/rcu_issue.h or on the web
+(www.ift.uib.no/~kjeks/wiki)
+Note: This list of samples is far from being complete.
+
+Note 2: The architecture of the ARM linux is little endian. That means the least 
+significant byte of a 32 bit word comes first, and so the CE expects to be the
+header and trailer. Thats why all 32 bit words appear swapped. 
+
+Every command has to be terminated by the end marker 0xdd33vvvv, where 'vvvv' is to
+be replaced by the version of the command definition.
+
+1. CE commands
+--------------
+Commands concerning the ControlEngine itself, steer properties and debug features
+ ce_disable_print    : disable printing of the incoming issue buffer
+ ce_print_24         : print maximum 24 bytes of the incoming issue buffer
+ ce_print_32         : the above with max 32 bytes
+ ce_disable_updt     : disable the service update
+ ce_relax_cmdchk     : relax the format checking of the incoming command
+ ce_sglwrt_on        : use single write/read instead of multiple write/read for the 
+                       communication with the RCU via the Msg Buffer
+ ce_logall           : switch log mode to all
+ ce_logerror         : switch log mode to error
+ ce_loginfo          : switch log mode to info
+ ce_logdebug         : switch log mode to debug
+ ce_exec_ls          : execute the shell command 'ls -l /'
+
+1.1 Hardware Configuration commands
+-----------------------------------
+ fee_configure_empty : an empty FEE_CONFIGURE command (including end marker)
+ fee_configure_1cmd  : FEE_CONFIGURE command with one sub-command 
+ fee_configure_5cmds : FEE_CONFIGURE command with 5 sub-command 
+ end_marker_v02      : end marker with command specification version 0.2
+ fee_configure_end   : FEE_CONFIGURE_END command
+ fee_verification_empty : empty FEE_VERIFICATION command
+
+Note: You can glue several of these sample files together with 'cat':
+e.g. 'cat fee_configure_1cmd fee_configure_end end_marker_v02'
+
+2. DCSC MsgBuffer interface commands
+------------------------------------
+debug options to the DCSC MsgBuffer interface, those can be useful to debug the
+data flow on the lowest level of the software, i.e. the communication with the 
+device driver.
+ dcsc_en_pmb         : enable printing of the Message Input Buffer
+ dcsc_dis_pmb        : disable
+ dcsc_en_prb         : enable printing of the Message Result Buffer
+ dcsc_dis_prb        : disable
+
+3. RCU commands
+---------------
+command set for the RCU
+ rcu_instmem_test    : write test pattern to RCU Instruction Memory
+                       three 32 bit words 0x04030201 0x08070605 0x35343332
+ rcu_read_inst_64    : read 64 byte from RCU Instruction Memory
+ rcu_patmem16_test   : write 16 bit test pattern to RCU Pattern Memory
+                       0x6874 0x7369 0x6920 0x2073 0x7564 0x6d6d 0x2079 
+                       0x6164 0x6174 0x4020 0x3635 0x3837 0x4039 0x0a0a
+ rcu_read_pat_24     : read 24 words from RCU Pattern Memory
+ rcu_read_result_64  : read 64 from the result memory
+ rcu_resmem_test     : write a test pattern to result memory
+ rcu_blckread_123-7000:read 123 words starting from adresse 0x7000
+ rcu_blckwrt_123-7000: write 123 words starting at address 0x7000
+ rcu_afl_0x0000      : set AFL to 0x0, i.e. disable all FECs
+ rcu_afl_0x0001      : set AFL to 0x1, enable FEC 0
+ .
+ .
+ .
+
+11. PHOS commands
+-----------------
+command set for the PHOS detector
+ phos_fec01_apd02_20 : set apd 02 of PHOS FEC 1 to value 20, note: the 'set' function has
+                       to be implemented! 

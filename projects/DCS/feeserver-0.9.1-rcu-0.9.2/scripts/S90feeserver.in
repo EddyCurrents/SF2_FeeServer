@@ -1,0 +1,42 @@
+#!/bin/sh
+# $Id: S90feeserver.in,v 1.1 2007/06/15 15:05:33 richter Exp $
+# this script is only part of the feeserver distribution
+# for the FMD CE
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+sbindir=@sbindir@
+sysconfdir=@sysconfdir@
+localstatedir=@localstatedir@
+logdir=${localstatedir}/log
+rundir=${localstatedir}/run
+defdir=${sysconfdir}/sysconfig
+
+if test -r ${bindir}/mac2num ; then 
+    . ${bindir}/mac2num
+fi
+if test -r ${defdir}/feeserver ; then 
+    . ${defdir}/feeserver 
+fi
+if test -r ${defdir}/feeserver.${HOST} ; then 
+    . ${defdir}/feeserver.${HOST} 
+fi
+export FEE_SERVER_NAME
+export DIM_DNS_NODE
+export FEE_LOG_LEVEL
+
+if test "x$1" = "xstop" || test "x$1" = "xrestart" ; then 
+    echo -n "Stopping FeeServer for $FEE_SERVER_NAME ... "
+    killall -9 startFeeServer.sh feeserver
+    echo "done"
+    if test "x$1" = "xstop" ; then exit 0 ; fi 
+fi
+
+cd ${bindir}
+echo -n "Starting FeeServer for $FEE_SERVER_NAME ... " 
+./startFeeServer.sh $FEE_SERVER_NAME \
+    > ${logdir}/feeserver.${FEE_SERVER_NAME} 2>&1 &
+echo "$!" > ${rundir}/feeserver.${FEE_SERVER_NAME}.pid
+echo "done (pid $!)"
+

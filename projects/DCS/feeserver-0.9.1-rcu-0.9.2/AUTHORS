@@ -1,0 +1,44 @@
+Package: FeeServer
+
+This package implements the FeeServer for Frontend electronics based on the
+RCU. All contributions are under the terms of the GNU General Public License 
+as published by the Free Software Foundation. Also see files ChangeLog and THANKS
+
+This packages is maintained by Matthias.Richter@ift.uib.no
+
+Authors:
+DIM(dim/):
+  DIM - Distributed Information Management System
+  Copyright (C) 1993 CERN
+  Also see dim/ReleaseNotes/license.gpl
+ 	C. Gaspar (clara.gaspar@cern.ch)
+
+FeeServer core (feeserver/src):
+	Sebastian.Bablok@ift.uib.no
+	Christian Kofler
+	Benjamin Schockert
+
+FeeServer Control Engine (feeserver/src_ce): all files except the detector
+					     specific files below
+  Experimental Nuclear Physics Group, Dep. of Physics and Technology
+  University of Bergen, Norway, 2004
+  www.ift.uib.no/~kjeks
+	Matthias.Richter@ift.uib.no
+	Dag.Larsen@ift.uib.no
+	Dominik Fehlker
+
+TPC Control Engine (feeserver/src_ce): ce_tpc.[cpp,h]
+  Experimental Nuclear Physics Group, Dep. of Physics and Technology
+  University of Bergen, Norway, 2004
+  www.ift.uib.no/~kjeks
+	Matthias.Richter@ift.uib.no
+	Dag.Larsen@ift.uib.no
+
+PHOS Control Engine (feeserver/src_ce): ce_phos.[cpp,h]
+  Framework by Matthias Richter
+
+FMD Control Engine (feeserver/src_ce): ce_fmd.[cpp,hpp]
+  Framework by Matthias Richter
+
+TRD Control Engine (feeserver/src_trd): ce_trd.[cpp,hpp]
+  Framework by Matthias Richter

@@ -1,0 +1,21 @@
+#
+# The name of the DIM DNS NODE
+#
+DIM_DNS_NODE=alifmddimdns
+
+#
+# The name of the FEE server.  This is here, only to override the 
+# automatically deduced fee server name.  The  script mach2num will
+# try to figure out the name automatically, based on the MAC address
+# of the interface card. 
+#
+# FEE_SERVER_NAME=
+
+# 
+# Set the log level 
+#
+FEE_LOG_LEVEL=0
+
+#
+# EOF
+#

@@ -1,0 +1,246 @@
+Package: FeeServer
+
+This package implements the FeeServer for Front-end electronics based on the 
+Readout Control Unit (RCU). All contributions are under the terms of the GNU 
+General Public License as published by the Free Software Foundation. 
+Also see files AUTHORS and THANKS.
+
+This packages is maintained by Matthias.Richter@ift.uib.no
+Comments, bug reports, suggestions welcome! 
+
+1. Overview
+===========
+This package is a compilation of the FeeServer application for ALICE 
+Front-end electronics based on the RCU. It features the full Control Engine 
+for the TPC detector. The package is based on the FeeServer core developed by
+the ZTT Worms (http://www.ztt.fh-worms.de), but the code has been rearranged 
+in order to have a more convenient structure. DIM, FeeServer core and 
+ControlEngine have been separated. 
+See the AUTHORS file for legal notice on parts and contributions.
+
+2. Setting up a version retrieved from CVS
+==========================================
+Skip this section if you have started from the tar ball.
+
+A version checked out from CVS requires a few steps to set up the Makefiles
+and some links which are related to the CVS repository structure at the IFT.
+Go to the directory and run
+
+  ./.autotools/acsetup.sh
+
+Note: This sub-folder/script is not part of the distribution since it is
+not necessary for it. 
+
+Then continue with the package configuration described in the 'Installation'
+section.
+
+3. Modifying a distributed package
+==================================
+If you are going the modify a distributed package you might need to re-make 
+the GNU build system by running
+
+  autoreconf -f -i
+
+Please notify the authors about bug fixes/corrections/extensions you made if
+you consider them worth to be merged into the project.
+
+Then continue with the package configuration described in the 'Installation'
+section.
+
+4. Installation
+===============
+Package build relies on the GNU triplet configure, make and make install. 
+
+It is recommended to read the complete section before the build process.
+
+4.1 For the impatiant user
+--------------------------
+To build the FeeServer for your workstation it's simply.
+
+  mkdir build
+  cd build
+  ../configure
+  make
+  make install
+
+The binary will not run on the DCS board! See 'Compilation for the DCS board'
+
+4.2 Installation directory
+--------------------------
+The default install directory is set to the current directory ($PWD). To
+override the default directory use the option --prefix=<dir>. More information
+can be obtained from the configure script by running it with option --help.
+All binary libraries will be installed under <prefix>/lib.
+
+If you compile the FeeServer for the ARM Linux, it's recommended to mount
+an nfs directory on the DCS board (this is convenient and, more crucial, 
+saves the flash memory on the board. The latter is important, since one has 
+only a limited number of write cycles before the flash weakens!). If you 
+name the directory on the build machine /nfs_export/dcscard, the files will
+be copied automatically to /nfs_export/dcscard/$USER. 
+Note: you need write access to that directory.
+If the directory doesn't exist or if you don't have write access the default
+prefix is set to $PWD. The same applies if you are not cross-compiling.
+
+
+4.3 Compilation for the DCS board
+---------------------------------
+To build the FeeServer for the ARM Linux of the DCS board, you will need a
+cross compiler. Use the script configure-arm which sets the required options.
+It also sets the prefix to /nfs_export/dcscard/$USER if this directory exists.
+
+  mkdir build-arm
+  cd build-arm
+  ../configure-arm
+  make
+  make install
+
+Make sure that the path of the cross compiler is added to the PATH variable.
+
+
+4.4 Dummy implementations for debugging
+---------------------------------------
+When running on another system than the DCS board, some dummy implementations
+can be switched on for debugging purpose.
+
+  mkdir build-rcudummy
+  cd build-rcudummy
+  ../configure --enable-rcudummy --enable-fecsim
+  make
+  make install
+
+
+4.5 Cross compilation details
+-----------------------------
+This is just more info on the cross compilation in case you want to go beyond
+the
+  configure-arm. 
+This script calls the configure script of the build system
+with a few default options:
+
+  --host
+  CC=arm-uclibc-gcc
+  CXX=arm-uclibc-g++
+  --disable-cxx-api
+  --disable-shared
+
+All default options can be overridden and other options added by command line
+parameters, e.g.
+
+  ../configure-arm LD=arm-uclibc-ld CC=my-cross-compiler-gcc
+
+4.6 Package options
+-------------------
+For further information on the detector implementations see below.
+
+  --enable-tpc             # Includes the TPC specific code
+  --enable-phos            # Includes the PHOS specific code
+  --enable-fmd             # Includes the FMD specific code
+  --enable-trd             # Includes the TRD specific code
+  --disable-services       # Disable the service publication and handling
+  --disable-rcu            # Disable the RCU features
+  --enable-rcudummy        # Switch of all RCU hardware access (dummy mode)
+  --enable-fecsim          # Enable FEC simulation
+
+4.7 Final remarks/further information 
+-------------------------------------
+Note: You can have several build directories with different configure options,
+but using the same source code. 
+
+If you need further information on the GNU build system, execute from the 
+top directory:
+
+  ../configure --help | less
+  ../configure --help=short # gives you an overview on specific options
+
+
+5. The 4 steps to a running FeeServer
+=====================================
+These instructions assume that you are still in the build directory.
+
+5.1 Dynamic libraries
+---------------------
+The FeeServer for a normal machine is dynamically linked to the DIM
+library. Add the path where libdim.so is located, $PWD/lib, to the 
+LD_LIBRARY_PATH variable. This is not necessary for the ARM Linux since
+the FeeServer is linked statically.
+
+ e.g. for c-shell do <br>
+  setenv LD_LIBRARY_PATH "$PWD/lib:$LD_LIBRARY_PATH"
+ or skip LD_LIBRAY_PATH at the end if it was not set before <br>
+  setenv LD_LIBRARY_PATH "$PWD/lib"
+
+ and for bash <br>
+  export LD_LIBRARY_PATH="$PWD/lib:$LD_LIBRARY_PATH"
+
+
+5.2 DIM Name Server
+-------------------
+The DIM sytem needs a DIM Name Server, the address of the machine running it has
+to be set to the variable
+  DIM_DNS_NODE
+
+ c-shell <br>
+  setenv DIM_DNS_NODE <an_address.domain>
+
+ bash <br>
+  export DIM_DNS_NODE=<an_address.domain>
+
+
+5.3 Name of the FeeServer
+-------------------------
+  FEE_SERVER_NAME - the name of this FeeServer
+
+ c-shell <br>
+  setenv FEE_SERVER_NAME my_server
+
+ bash <br>
+  export FEE_SERVER_NAME=my_server
+
+
+5.4 Start the FeeServer
+-----------------------
+  ./bin/startFeeServer.sh
+
+6. Detector implementations
+===========================
+The following detector implementations are available:
+ - TPC:    feeserver/src_ce/ce_tpc.h\.cpp
+ - PHOS:   feeserver/src_ce/ce_phos.h\.cpp
+ - FMD:    feeserver/src_ce/ce_fmd.hpp\.cpp
+ - TRD:    feeserver/src_trd/ce_trd.hpp\.cpp
+
+7. Source code documentation
+============================
+Documentation is build as part of the build process if \b doxygen is installed.
+The documentation can be opended from the
+  doc/html/
+sub-folder of your build directory. E.g with a web browser like firefox (assuming
+you are in the build directory):<br>
+  firefox file://`pwd`/doc/html/index.html
+
+A special target can be used to make a tar ball out of the documentation (again
+provided you are in the build directory):<br>
+  (cd doc && make tar-ball)
+
+On-line documentation is avaible at
+  http://web.ift.uib.no/~kjeks/doc/feeserver/
+
+8. Sample commands
+==================
+A number of sample commands are provided in the folder rcu-ce-cmds. This is by far 
+not a complete list but should illustrate the use of the ControlEngine commands. 
+The command codes are defined in feeserver/src_ce/rcu_issue.h 
+
+9. Further information
+======================
+A wiki with detailed information is set up at
+http://www.ift.uib.no/~kjeks/wiki
+section: Detector Control System (DCS) for ALICE Front-end electronics
+
+Further info on the ARM Linux, including the cross compiler (arm-uclibc 3.3.1)
+http://frodo.nt.fh-koeln.de/%7Etkrawuts/dcs.html
+
+Also see files README_v* in the feeserver subfolder. These are the readme's 
+distributed with the FeeServer core software. !!!! Note: the compilation
+instructions are obsolete !!!

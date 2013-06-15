@@ -1,0 +1,62 @@
+#!/bin/sh
+
+tgtdir=`dirname $0`
+[ -z $tgtdir ] && tgtdir='.'
+
+tgtscript=${tgtdir}/configure
+arm_default_prefix=/nfs_export/dcscard/${USER}
+
+if test ! -x $tgtscript; then
+cat <<EOF
+can not find configure script, you need to configure manually, or call this
+script with its absolute path.
+EOF
+exit
+fi
+
+# the default options
+def_options="--host=arm-linux CC=arm-uclibc-gcc --disable-cxx-api --disable-shared"
+
+# check which options already have been specified
+for option in $@; do
+    case $option in 
+	--prefix*)         def_prefix=no ;;
+	--host*)           def_host=no   ;;
+	CC=*)              def_CC=no     ;;
+	CXX=*)             def_CXX=no    ;;
+	*-cxx-api)         def_cxxapi=no ;;
+	--enable-shared*)  def_shared=no ;;
+	--disable-shared*) def_shared=no ;;
+    esac
+done
+
+# set the options
+options=$@
+if [ "x$def_prefix" != "xno" ] && test -d $arm_default_prefix ; then
+  options="$options --prefix=$arm_default_prefix"
+fi
+
+[ "x$def_host"   != "xno" ] && options="$options --host=arm-linux"
+[ "x$def_CC"     != "xno" ] && options="$options CC=arm-uclibc-gcc"
+[ "x$def_CXX"    != "xno" ] && options="$options CXX=arm-uclibc-g++"
+[ "x$def_cxxapi" != "xno" ] && options="$options --disable-cxx-api"
+[ "x$def_shared" != "xno" ] && options="$options --disable-shared"
+
+# check for compilers
+for option in $options ; do
+  arg=`echo $option | sed 's|[-_a-zA-Z0-9]*=||'`
+  case $option in
+      CC=* | \
+      CXX=*)
+	  if ! ( which $arg > /dev/null ) ; then
+	      echo
+	      echo "errot: can not find compiler $arg, check environment (PATH)"
+	      echo
+	      exit
+	  fi
+	  ;;
+  esac
+done
+
+echo ${tgtdir}/configure $options
+${tgtdir}/configure $options

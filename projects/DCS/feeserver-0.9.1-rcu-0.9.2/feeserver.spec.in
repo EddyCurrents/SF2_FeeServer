@@ -1,0 +1,86 @@
+# -*- mode: rpm-spec -*- 
+# $Id: feeserver.spec.in,v 1.1 2007/06/18 07:56:04 richter Exp $
+%define debug_package 	  %{nil}
+%define __find_provides   %{nil}
+
+#_____________________________________________________________________
+Summary: 	DCS card FeeServer
+Name: 		feeserver
+Version: 	@RPM_VERSION@
+Release: 	1
+License: 	GNU General Public License
+Group: 		System/Servers
+URL: 		http://www.ift.uib.no/~kjeks/download
+Source0: 	%{name}-@VERSION@.tar.gz
+BuildRoot: 	%{_tmppath}/%{name}-%{version}-%{release}-buildroot
+BuildArch:	noarch
+AutoReq:	0
+Requires:	nfs-server
+
+%description
+This package contains the FeeServer for the DCS cards. Originally
+developed for the RCU, the CE++ framework can also serve other
+hardware.
+
+The following functionality is anabled for this package:
+@RPM_BUILD_ARGS@
+
+The server is installed in @RPM_PREFIX@, which can then be served
+via NFS to the DCS boards. On the DCS boards, the following should be 
+setup
+
+* The NFS directory @RPM_PREFIX@ should be mounted from host this package
+  is installed on.   The directory should be exported with the following 
+  options: 
+	rw
+	sync
+	all_squash
+	anonuid=99
+	anongid=99
+
+* One should create the symbolic link 
+	`/dcs-share/boot' -> `@RPM_PREFIX@/etc/init.d'
+
+#_____________________________________________________________________
+%prep
+%setup -q -n %{name}-@VERSION@
+./configure	\
+	--prefix=@RPM_PREFIX@ \
+	@RPM_BUILD_ARGS@
+
+%build
+make 
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
+mkdir -p $RPM_BUILD_ROOT@RPM_PREFIX@/var/log
+mkdir -p $RPM_BUILD_ROOT@RPM_PREFIX@/var/run
+export STRIP=/bin/true
+export OBJDUMP=/bin/true
+
+%clean
+# rm -rf $RPM_BUILD_ROOT
+make distclean > /dev/null 2>&1 
+
+#_____________________________________________________________________
+%files
+%defattr(-,root,root,-)
+%config(noreplace) @RPM_PREFIX@/etc/sysconfig/feeserver
+%attr(775,nobody,nobody) @RPM_PREFIX@/var/log
+%attr(775,nobody,nobody) @RPM_PREFIX@/var/run
+@RPM_PREFIX@/lib
+@RPM_PREFIX@/bin
+@RPM_PREFIX@/etc
+@RPM_PREFIX@/include
+
+
+#_____________________________________________________________________
+%changelog
+* Fri Jun  13 2007 Matthias Richter <Matthias.Richter@ift.uib.no> 
+- added to project, 
+- few generalizations.
+
+* Sat Apr  7 2007 Christan Holm Christensen <cholm@nbi.dk> 
+- Initial build.
+

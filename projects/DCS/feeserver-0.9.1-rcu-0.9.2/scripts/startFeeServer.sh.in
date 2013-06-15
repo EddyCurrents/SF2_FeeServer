@@ -1,0 +1,190 @@
+#!/bin/sh
+
+###############################################################################
+#                                                                             #
+# This script is part of the FeeCommunication Software for the DCS            #
+# of the ALICE experiment at CERN. It starts the FeeServer and takes care of  #
+# updating and restarting commands. It ends only , when the FeeServer is      #
+# terminated (which way soever) and no updateFeeServer or restartFeeServer    #
+# command has triggered the termination.                                      #
+#                                                                             #
+# This file is property of and copyright by the Department of Physics         #
+# Institute for Physic and Technology, University of Bergen,Bergen, Norway    #
+# and Center for Technologytransfer and Telecommunication, University of      #
+# Applied Science Worms, Worms, Germany                                       #
+#                                                                             #
+# Important: This file is provided without any warranty, including            #
+# fitness for any particular purpose. When distributing this file further,    #
+# this copyright and warranty paragraph must be kept as it is.                #
+#                                                                             #
+# @author: S. Bablok (IFT, University of Bergen), C. Kofler (ZTT FH Worms)    #
+# (for more information: http://www.ztt.fh-worms.de)                          #
+#                                                                             #
+###############################################################################
+
+# this is nice but not applicable for the DCS board, since the mounted
+# network disk might have different paths on the build machine and the board
+# prefix=@prefix@
+# exec_prefix=@exec_prefix@
+# bindir=@bindir@
+# sbindir=@sbindir@
+bindir=`dirname $0`
+
+echo " "
+
+if [ $1 ]
+then
+	echo "setting new FEE_SERVER_NAME $1"
+	export FEE_SERVER_NAME=$1
+fi
+
+if [ $2 ]
+then
+	# check if parameter 2 is a valid integer
+	if [ $(echo "$2" | grep -E "^[0-9]+$") ]
+	then
+    	echo "setting FEE_LOGWATCHDOG_TIMEOUT to $2"
+    	export FEE_LOGWATCHDOG_TIMEOUT=$2
+	else
+    	echo "Parameter 2 ($2) is not a valid integer, using default ..."
+	fi
+fi
+
+echo "updating time on board"
+# including Timeserver name
+if [ -r /etc/network ]
+then
+	. /etc/network
+fi
+
+# check that we have `rdate' 
+if test ! `which rdate > /dev/null 2>&1` ; then 
+    IP_TIMESERVER=
+fi
+
+# Check if we have a time server 
+if test ! "x$IP_TIMESERVER" = "x"
+then
+	# retrieving current date and time
+	rdate $IP_TIMESERVER
+else
+	echo "no timeserver specified"
+fi
+
+# preparing condition for restart after init timeout
+# Note: the counter counts backwards, if it is zero, there will be NO
+# restart issued anymore
+logger_redirect=""
+if [ $FEE_TO_SYSLOG ] 
+then
+	logger_redirect=" 2>&1 logger"
+fi
+
+counterInitVal=3
+counter=$counterInitVal
+export FEESERVER_RESTART_COUNT=$counter
+echo "restart counter is set to $FEESERVER_RESTART_COUNT"
+
+echo " "
+echo "starting FeeServer $FEE_SERVER_NAME"
+echo "  Have fun ;-)"
+date
+
+doRestart=1
+
+while [ $doRestart -ne 0 ]
+do
+	echo "$bindir/feeserver $logger_redirect"
+	$bindir/feeserver $logger_redirect
+	retVal=$?
+
+	while [ $retVal -eq 3 ] || [ $retVal -eq 2 ] || [ $retVal -eq 4 ]
+	do
+		#echo "Exit status of FeeServer: $retVal"
+
+		sleep 1
+		echo "killing all feeserver processes to prepare restart"
+		killall -q -KILL feeserver
+		echo " "
+
+		# prepare update only if "newFeeServer" exists and is non-zero
+		if [ $retVal -eq 3 ] && [ -s newFeeserver ]
+		then
+			echo "preparing new binary for update"
+			mv feeserver feeserver.org
+			mv newFeeserver feeserver
+			chmod 777 feeserver
+			echo "FeeServer update finalised"
+		fi
+
+		# prepare restart after init timeout
+        if [ $retVal -eq 4 ]
+        then
+            let counter=${counter}-1
+            export FEESERVER_RESTART_COUNT=$counter
+        else # set restart counter back to initial value
+            counter=$counterInitVal
+        fi
+        export FEESERVER_RESTART_COUNT=$counter
+        echo "restart counter is set to $FEESERVER_RESTART_COUNT"
+
+		echo " "
+		if [ $IP_TIMESERVER ]
+		then
+			echo "updating time on board"
+			# retrieving current date and time
+			rdate $IP_TIMESERVER
+		fi
+
+		echo "restarting FeeServer..."
+		echo " "
+		echo "$bindir/feeserver $logger_redirect"
+		$bindir/feeserver $logger_redirect
+		retVal=$?
+
+	done
+	echo "FeeServer exited with status $retVal."
+
+	if [ $retVal -eq 0 ]
+	then
+		echo "Clean exit"
+		doRestart=0
+	elif [ $retVal -eq 127 ]
+    then
+        echo "FeeServer binary is missing, exiting script!"
+        doRestart=0
+	elif [ $retVal -eq 201 ]
+	then
+		echo "Insufficient memory!"
+		doRestart=0
+	elif [ $retVal -eq 202 ]
+	then
+		echo "No FeeServer name specified!"
+		doRestart=0
+	elif [ $retVal -eq 203 ]
+	then
+		echo "No DIM_DNS_NODE specified!"
+		doRestart=0
+	elif [ $retVal -eq 204 ]
+	then
+		echo "DIM framework exited FeeServer"
+		echo "(maybe Server with same name already exists)."
+		doRestart=0
+	elif [ $retVal -eq 205 ]
+	then
+		echo "Unable to run as DIM Server"
+		doRestart=0
+	else
+		echo "FeeServer exited due to unknow error!"
+		echo "Trying to restart FeeServer now ..."
+		echo ""
+		#set restart counter to inital value
+		counter=$counterInitVal
+		export FEESERVER_RESTART_COUNT=$counter
+	fi
+
+done
+
+echo " -- BYE --"
+echo " "
+

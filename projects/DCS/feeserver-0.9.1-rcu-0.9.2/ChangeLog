@@ -1,0 +1,289 @@
+ChangeLog for FeeServer package. This will focus on the ControlEngine.
+Also see files README_v* in the feeserver subfolder for a history on 
+the FeeServer core software.
+
+04.09.2007 release of FeeServer_v0-9-1_RCU-v0-9-2
+	- Note: cvs tag of the branch is for some accident FeeServer_v0-9-2_RCU-v0-9-2
+	- based on core version 0.9.1
+	
+	Logging
+	  - INFO log level removed from core default log level
+	  - log level for initialization is 'Info', after init changed to
+	    'Warning'
+	  - better filtering of warnings for access failures
+
+	State Machines
+	- support for temporary states and guard structure added
+	- Handler for USER defined states added to dispatcher, dynamic
+	  transition handling implemented
+	- high-level commands CE_GET_TRANSITIONS, CE_GET_STATENAME, CE_GET_STATES, 
+	  and CE_GET_STATE implemented for devices
+	
+	MsgBuffer
+	- msg buffer access encapsulated completely in separate class
+	  DCSCMsgBuffer(dev_msgbuffer.[c,h]pp)
+	- msgbuffer simulation functionality moved from CErcu to DCSCMsgBuffer
+	- check of msgBufferInterface driver and intelligent handling of failures
+
+	TPC/RCU
+	- MAIN state machine corrected according to the lates agreements
+	  - no state 'RUNNING'
+	  - CONF_DDL can be entered by START_DAQ_CONF
+	  - CONF_DDL terminated by START_DAQ_CONF
+	  - intermediate state RAMPING_DOWN as part of GO_IDLE
+	- ramping of FECs power on/off added to dev_rcu, FECs are switched
+	  with at least 1 second delay between each other
+	- switching of FECs indicated by intermediate state RAMPING_UP/DOWN
+	- apply final naming scheme for FECs if server name follows the naming
+	  rule TPC-FEE_x_y_z. Note: the naming scheme has been aggreed on by
+	  PBM, Luciano and Christian in June 2007 and is the same on A and C
+	  side. The last FEC in branch A is no 00, and than it counts the branch
+	  A down and branch B up. The first FEC in branch B is therefore no 9, 10
+	  or 12, depending on the total no of FECs
+	- ACTEL control device added
+
+	Commands
+	- command set version 5:
+	  - RCU configuration and ACTEL device commands
+	  - RCU_READ_FW_VERSION added
+	- command set version 4: two new commands CE_GET_STATE and
+	  CE_GET_STATE added
+	- FEE_CONFIGURE improved: scanning of hardware address and printout,
+	  history of pending FEE_CONFIGURE commands
+
+	Misc
+	- CE_FORCE_CH_UPDATE updates all services beginning with specified string
+	- service update is stopped during command execution
+	- update of FECs during ramping	
+	- generic high-level command handling applied to existing handling,
+	  additional high-level commands added
+            FEESVR_SET_FERO_DATA32 (converted)
+            FEESVR_SET_FERO_DATA16
+            FEESVR_SET_FERO_DATA8
+            CE_FORCE_CH_UPDATE
+            CEDBG_SET_BUF_PRINT_SIZE
+            CEDBG_EN_SERVICE_UPDATE
+            CEDBG_SET_SERVICE_VALUE
+            CE_SET_LOGGING_LEVEL
+            CE_RELAX_CMD_VERS_CHECK
+	  
+19.06.2007 release of feeserver-0.8-rcu-0.9
+	- core updated to 0.8.1
+	- CE++ interface finnished, fully object oriented CE
+	- tpc and phos CE converted to CE++
+	- support and examples for TRD and FMD added
+	- CE publishs also int and char channels
+	- Sub-device handling implemented
+	- ACTIONS can be send to all sub-device state machines
+	- user defined states added to StateMachine, flexible translation scheme
+	  by CEStateMapper object
+	- rpm support added
+	- RCU CE
+	  - detector flavors derive from RCU CE base class
+	  - flexible branch layout
+	  - detector specific FEC implementation inherits from FEC base class
+	  - RCU registers published as int channels, currently AFL and ERRST
+	  - switch for 5/8-bit SlowControl interface foreseen, 8-bit access 
+            has to be implemented
+	
+13.06.2007 feeserver-0.8-rcu-0.9-beta5
+	- updated to feeserver core 0.8, see feeserver/README_v0.8.txt
+	- support and examples for TRD and FMD added
+	- code documentation
+	- bugfix: FEC pos >= 4 monitoring fixed (CErcu::IsFECposActive)
+	- RCUControlEngine starts in state STANDBY (ON), more inconsistencies
+	  in states and functionality in CErcu and CEfec corrceted 
+	
+08.06.2007 feeserver-0.7-rcu-0.9-beta4	
+	- bugfix: crash in the feeserver core in the cleanUp of the item list. 
+	  Memory for the item and item name is freed, additional memory is now
+	  allocated in RegisterService
+	- The CE is fully C++, customized CE's can be derived from the ControlEngine
+	  base class which handles all CE API entries.
+	- services of FEC's are entirely registered and handled by the FEC devices.
+	- FEC's are turned to state failure if there was a repeated access error,
+	  this stops services publishing and also the error messages
+	- value range of FEC services: a range can be specified for FEC services, the
+	  FEC goes to ERROR state and is turned off if a value is outside the range.
+	- implementation of the TPC FEC: TEMP limit 55 degrees
+	- dummy access of FEC registers via the SlowControl bus directly after power
+	  up of the FEC. According to Roberto this is necessary to bring the 
+	  SlowControl into a defined state.
+        - temporary for the TPC test Jun 07: write access to the CSR0 before each
+	  register access. This sounds like a desperate try, yeah.
+	- CEdevice: handler for entering ERROR state added 
+	
+04.06.2007 feeserver-0.7-rcu-0.9-beta3
+	- added dummy access to FEC right after switching on in order to bring I2C bus
+	  into defined state
+	- handling of FEE_CONFIGURE command moved to RCUControlEngine, 
+	  transition to error state if failed
+
+04.06.2007 feeserver-0.7-rcu-0.9-beta2
+	- completely re-worked CErcu device
+	  - FEC services controlled by FEc devices
+	  - CErcuSim class implements RCU dummy functionality
+	  - servive functionality moved from rcu_service to CErcu (dev_rcu.cpp)
+	  - NOTE: handling of additional services for RCU registers is currently
+	    disabled
+	- CEfecTPC and TPCBranchLayout are the default setup definitions
+	- all DIM devices get a set function for the STATE channel in order
+	  to switch on/off
+	- access error flag for FECs: cards are turned to ERROR state after
+	  repeated access error of the same register
+	
+31.05.2007 feeserver-0.7-rcu-0.9-beta1
+	- object oriented FEC handling -> FECs as sub-devices to RCU device
+	- reset of the Altro bus ErrSt register before RCU sequencer execution
+	- internal changes: object oriented command (issue) handling started and
+	  implemented for RCU device
+	- Int and string service types added, all DIM devices get STATE and 
+	  STATENAME channel.
+	- STATE IDs of MAIN state machine adapted to PVSS IDs
+	
+15.05.2007 FeeServer-0.7-rcu-0.8.9-dev
+	- float and string DIM channels added to CE framework
+	- channel STATENAME added for CEDimDevices
+
+15.05.2007 FeeServer-0.7-rcu-0.8.6
+	- TPC configuration working session Apr 02-04 2007
+	- updated to DIM 16.09
+	- bugfixes:
+	  - dcscMsgBufferInterface: return value of rcuMultipleReadExt
+	    corrected to be word count
+	  - service update: disable reading of active FEC list if service
+	    update disabled
+	  - command handling: RCU_READ/WRITE_MEMBLOCK return correct byte count
+	  - command handling: FEE_CONFIGURE corrected word counter for nested
+	    commands
+	- added LockGuard in order to protect RCU memory access in concurrent threads
+	  (service update and RCU memory access commands)
+	
+22.07.2006 FeeServer-0.7-rcu-0.8.5
+	- command set version 3: access commands for all RCU registers added
+	- the command definition rcu_issue.h does not contain function definitions
+	  any more but oly defines -> can be used directly in client applications
+	- file descriptor leak in shell program execution fixed
+
+12.07.2006 FeeServer-0.7-rcu-0.8.4
+	- conversion to feeserver core version 0.7.6
+	- benchmark output enabled by --enable-benchmark
+	- the inbuilt dim package is always used since we need to compile
+	  with the NOTHREADS flag
+
+11.07.2006 FeeServer-0.7-rcu-0.8.3
+	- quick implementation of FEC simulation 
+	- quick high-level command handler for command FEESVR_SET_FERO_DATA32
+	  in order to activate/deactivate FECs
+
+23.06.2006 FeeServer-0.7-rcu-0.8.2
+	- bugfix in CErcu::EvaluateFirmwareVersion/enableControl, the return
+	  value was interpreted in the wrong way in the last version
+	- all probing for RCU firmware features and FEC configuration is by
+	  default disabled and can be enabled by --enable-auto-detection
+	- the server handles also the old FW register 0x8006
+
+15.06.2006 FeeServer-0.7-rcu-0.8.1
+	- RCU FW version is checked, no further feature probing if valid
+	  version id can be found
+
+15.05.2006 FeeServer-0.7-rcu-0.8
+	- first version of a working state machine for the RCU CE
+	  including state machine for RCU as sub-device
+	- state machine framework implemented
+	- main state machine for RCU ControlEngine added
+	- actions for main state machine added
+	- arm executable converted to use standard shared libraries
+	- timeout for init set to 30 sec, for issue 60 sec
+	- added CEDimDevice to encapsulate publication of state and alarm 
+	  via a DIM channel, corresponding code moved from RCUControlEngine
+	  to CEDimDevice
+	- FEC TH-services taken from the standard service publishing; now 
+	  TEMP, AC, AV, DC, DV and FEC STATE exported
+
+25.04.2006 FeeServer-0.7-rcu-0.7-beta
+	- issue handler supports command sequences
+	- configuration commands added to the command set, currently ignored
+	- started conversion to C++: rcu_issue, ce_base, ce_tpc and ce_phos
+	  converted
+	- started state machine project
+	- auto-detection of Front-end cards
+	- CE logging macros now send logging messages through FeeServer log channel
+	- dead-lock in FeeServer log channel called from issue handler fixed by
+	  compiling DIM library with flags NOTHREADS
+	
+16.03.2006 FeeServer-0.7-rcu-0.6.2
+	- build scheme has changed to comply with the autotools rules
+	  have a look into the README
+	- dim has become a real autotools package, the shipped version
+	  is used only if there is no dim library found in the system or if
+	  explicitly stated
+	- work arounds for RCU firmware version of May 05 (unfortunately 
+	  there is no real version tag) can be enabled by --enable-ancient05
+	- documentation automatically build if doxygen is available
+	  
+23.01.2006 release FeeServer-0.7-rcu-0.5
+	- changes in CE rcu-0.5
+	  - FEC addressing changed according to the grouping into the two branches
+	  - shell execution command group implemented
+	  - 'master mode' introduced to enable/disable security-relevant features 
+	    (e.g. shell command execution, feeserver update); by default disabled
+	  - DIM package updated to version 15.20
+	  - crashes on normal PCs in the DIM package fixed, most likely due to the handling of threads in the DIM library
+	- changes in FeeServer core 0.7.3 (see also README_v0.7.txt in feeserver folder)
+	  - default log level set from environment variable FEE_LOG_LEVEL if existent
+	  - error handler for DIM messages implemented to catch messages from DIM system and
+	    publish them as log messages
+	  - DIM channel names for Acknowledge, Message and Command channel changed from 
+	    <server name>/Acknowledge to <server name>_Acknowledge aso.
+	  - bugfix for timeout handling (init/issue)
+
+16.12.2005 FeeServer-0.7-rcu-0.5-beta
+	- extended command set: 
+	  - result mem read/write 
+	  - block mem read/write (arbitrary address)
+	- started 'rcudummy' option and implementation; simulation of rcu memory access if hardware not available
+	- CE logging scheme intruduced, CE_SET_LOGGING_LEVEL command implemented
+	- something like a state machine started, but not funtional yet
+	
+17.11.2005 release FeeServer-0.7.3 (Sebastian Bablok)
+	- included FeeServer core version 0.7.3
+	- for changes see notes above (or README_v0.7.txt in feeserver folder)
+
+07.11.2005 release FeeServer-0.7-rcu-0.4
+	- common service handling implemented (ce_base.c,h)
+	- template ce for phos added (with APD set function)
+	- proprietary RCU state check
+	- end marker check added for control engine commands 
+	- number of FECs depends on detector
+	- sample commands added to the package (rcu-ce-cmds)
+	
+30.09.2005
+	- new command ids defined: 
+	   - turn on/off service update
+	   - set service value
+	   - reading of default services
+	   - reading of currently valid FECs
+	   - read rcu instruction/pattern memory (not yet implemented)
+	   - read/ write rcu memory (not yet implemented)
+	- the valid FECs are configured at startup from the system variable FEESERVER_FEC_MONITOR if
+	  available; for now format is a string like "0101" where each 1 enables the corresponding FEC, 
+	  all missing are treated as zero, the above exaple enables thus FEC #2 and #4 while all the 
+	  others are disabled
+	- configure: default install directory set to the project directory itself
+	- the README_v* files for the core software have been moved to the feeserver subfolder
+	
+25.09.2005 Matthias Richter
+	first official release of the FeeServer package with core version 7.0 and
+	RCU/TPC ControlEngine version 0.3
+	- converted to autoconf
+	- minor changes in ControlEngine, no functional changes
+
+20.09.2005 Matthias Richter
+	FeeServer package with core version 7.0 and RCU/TPC ControlEngine version 0.2
+	- services implemented
+	- command (issue) handling implemented, see feeserver/src_ce/rcu_issue.h for
+	  command ids or the wiki 
+	          http://www/~kjeks/wiki/index.php?title=RCU_ControlEngine
+	- template functions for RCU, TPC and PHOS specific command handling
+	- package adapted to autoconf/automake

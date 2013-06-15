@@ -1,0 +1,16 @@
+#!/bin/sh 
+
+# $Id: mac2num,v 1.1 2007/06/15 15:05:34 richter Exp $
+# this script is only part of the feeserver distribution
+# for the FMD CE
+
+mach=`ifconfig | sed -n -e 's/.*HWaddr //p' | sed -e 's/ *$//'`
+case $mach in
+    *01:0E) num=270 ; name=FMD-FEE_0_0_0 ;; 
+    *01:0F) num=271 ; name=FMD-FEE_0_0_1 ;;
+    *01:10) num=272 ; name=FMD-FEE_0_0_2 ;;
+    *01:11) num=273 ; name=FMD-FEE_0_0_3 ;;
+    *)      num=0   ; name=              ;;
+esac
+FEE_SERVER_NAME=$name
+ 
